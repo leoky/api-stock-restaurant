@@ -8,7 +8,7 @@ export default {
         pool.query(
             `SELECT i.id, i.name, uom.name as uom, ig_state.name as state, ig_type.name as type, SUM(inflow.quantity) as currentStock
             FROM ingredient i
-            LEFT JOIN uom ON uom.id = i.uom
+            LEFT JOIN uom ON  i.uom = uom.id
             LEFT JOIN ig_state ON i.state = ig_state.id 
             LEFT JOIN ig_type ON i.type = ig_type.id
             LEFT JOIN inflow ON i.id = inflow.ingredient GROUP BY i.id, uom.name, ig_state.name, ig_type.name

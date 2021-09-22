@@ -5,10 +5,15 @@ const table = 'ig_type';
 
 export default {
     getAll: (req: Request, res: Response) => {
-        pool.query(`SELECT * FROM ${table}`, (error, result) => {
-            if (error) return res.status(400).json(error);
-            res.status(200).json(result.rows);
-        });
+        pool.query(
+            `SELECT t.id, t.name, COUNT(i.id) as assigned 
+            FROM ${table} t
+            LEFT JOIN ingredient i ON  t.id = i.type
+            GROUP BY t.id`,
+            (error, result) => {
+                if (error) return res.status(400).json(error);
+                res.status(200).json(result.rows);
+            });
     },
     create: (req: Request, res: Response) => {
         const { name } = req.body;
@@ -34,5 +39,26 @@ export default {
             if (error) return res.status(400).json(error);
             res.status(200).json(true);
         });
+    },
+    assignTo: (req: Request, res: Response) => {
+        const { ingredients, igTypeId } = req.body;
+
+        let ig = '';
+
+        if (ingredients) {
+            ig = typeof ingredients === 'string' ? JSON.parse(ingredients) : ingredients;
+
+        }
+
+        pool.query(
+            `UPDATE ingredient SET type = $1 WHERE id = ANY($2::int[])`,
+            [parseInt(igTypeId), ig],
+            (error, result) => {
+                if (error) {
+                    return res.status(400).json(error);
+                }
+                res.status(200).json(true);
+            });
+
     },
 }
